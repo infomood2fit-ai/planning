@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#3C3489">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="M2F Planning">
+<link rel="manifest" href="./manifest.json">
+<title>Mood2Fit — Planning</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --prod:#3C3489;--prod-bg:#EEEDFE;--prod-bd:#AFA9EC;
+  --insta:#72243E;--insta-bg:#FBEAF0;--insta-bd:#ED93B1;
+  --biz:#712B13;--biz-bg:#FAECE7;--biz-bd:#F0997B;
+  --li:#0C447C;--li-bg:#E6F1FB;--li-bd:#85B7EB;
+  --ops:#27500A;--ops-bg:#EAF3DE;--ops-bd:#97C459;
+  --admin:#633806;--admin-bg:#FAEEDA;--admin-bd:#EF9F27;
+  --deca:#5F5E5A;--deca-bg:#F1EFE8;--deca-bd:#D3D1C7;
+  --cours:#7A4500;--cours-bg:#FEF3E2;--cours-bd:#FCDDA0;
+  --text:#1a1a1a;--text2:#555;--text3:#999;
+  --bg:#f8f7f5;--card:#fff;--border:#e8e6e0;
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:90px;}
+.header{background:#3C3489;color:#fff;padding:14px 16px 10px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px #3C348940;}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.header h1{font-size:17px;font-weight:700;}
+.week-nav{display:flex;align-items:center;gap:8px;}
+.week-nav button{background:#ffffff20;border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.week-label{font-size:12px;font-weight:600;white-space:nowrap;}
+.gcal-btn{background:#ffffff20;border:none;color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;}
+.gcal-btn:hover{background:#ffffff35;}
+.gcal-btn.connected{background:#1D9E7530;}
+.gcal-btn .dot{width:7px;height:7px;border-radius:50%;background:#9FE1CB;}
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:64px;z-index:90;}
+.tab{flex:1;padding:11px 4px;text-align:center;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.tab.active{color:#3C3489;border-bottom-color:#3C3489;}
+.page{display:none;padding:12px 12px 0;}
+.page.active{display:block;}
+.bloc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.5rem;}
+.bloc-card{border-radius:var(--radius);padding:10px 12px 8px;cursor:pointer;border:1.5px solid transparent;transition:transform .1s;user-select:none;-webkit-user-select:none;}
+.bloc-card:active{transform:scale(.97);}
+.bloc-card.selected{border-color:var(--sel-c)!important;box-shadow:0 0 0 3px var(--sel-s);}
+.bc-title{font-size:12px;font-weight:700;margin-bottom:2px;}
+.bc-sub{font-size:10px;opacity:.72;line-height:1.3;}
+.bc-badge{display:inline-block;font-size:9px;font-weight:600;padding:2px 7px;border-radius:20px;margin-top:5px;}
+.bc-dur{font-size:10px;font-weight:500;margin-top:3px;}
+.picker-wrap{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px;margin-bottom:14px;display:none;}
+.picker-wrap.open{display:block;}
+.picker-title{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.picker-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.picker-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+.picker-scroll::-webkit-scrollbar{display:none;}
+.pday{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.pday-lbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.04em;}
+.pslot{font-size:11px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#fafafa;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .12s;text-align:center;}
+.pslot.taken{background:#f0eeea;color:#bbb;cursor:default;text-decoration:line-through;font-style:italic;}
+.pslot.blocked{background:#f5f3ef;color:#ccc;cursor:default;font-style:italic;}
+.picker-cancel{margin-top:10px;font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;display:inline-block;}
+.week-grid{background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:14px;}
+.wg-head{display:grid;grid-template-columns:40px repeat(7,1fr);border-bottom:1px solid var(--border);}
+.wg-dh{font-size:9px;font-weight:600;color:var(--text3);text-align:center;padding:6px 1px;background:#fafafa;}
+.wg-row{display:grid;grid-template-columns:40px repeat(7,1fr);}
+.wg-row:first-of-type{border-bottom:1px solid #f0eeea;}
+.wg-lbl{font-size:8px;color:var(--text3);display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);padding:3px 2px;background:#fafafa;border-right:1px solid var(--border);}
+.wg-cell{min-height:50px;padding:3px 2px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-right:1px solid #f5f3ef;position:relative;}
+.wg-cell:last-child{border-right:none;}
+.cell-inner{border-radius:5px;padding:3px 2px;width:100%;text-align:center;}
+.cell-title{font-size:8px;font-weight:700;line-height:1.2;}
+.cell-sub{font-size:7px;opacity:.7;line-height:1.1;margin-top:1px;}
+.cell-rm{position:absolute;top:2px;right:2px;font-size:11px;color:#ccc;cursor:pointer;font-weight:700;line-height:1;padding:2px;}
+.action-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.btn{padding:10px 16px;border-radius:var(--radius-sm);border:none;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:#3C3489;color:#fff;}
+.btn-secondary{background:#fff;color:#3C3489;border:1.5px solid #3C3489;}
+.btn-sm{padding:7px 12px;font-size:11px;}
+.btn-gcal{background:#1D9E75;color:#fff;}
+.btn-gcal:disabled{background:#ccc;cursor:default;}
+.hours-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px;margin-bottom:14px;}
+.hours-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;}
+.hours-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f5f3ef;}
+.hours-row:last-child{border-bottom:none;}
+.hours-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.hours-label{flex:1;font-size:12px;color:var(--text2);}
+.hours-bar-wrap{flex:2;height:6px;background:#f0eeea;border-radius:3px;overflow:hidden;}
+.hours-bar{height:100%;border-radius:3px;transition:width .4s;}
+.hours-val{font-size:12px;font-weight:700;color:var(--text);min-width:32px;text-align:right;}
+.hours-total{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;font-weight:700;}
+.hist-week{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px;margin-bottom:10px;}
+.hist-title{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.hist-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.hist-chip{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;}
+.tasks-panel{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px;margin-bottom:14px;}
+.tasks-title{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+.task-item{font-size:12px;color:var(--text2);padding:5px 0;border-bottom:1px solid #f5f3ef;display:flex;gap:6px;line-height:1.4;}
+.task-item:last-child{border-bottom:none;}
+.task-item::before{content:"→";color:var(--text3);flex-shrink:0;}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:12px;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.gcal-banner{background:#EAF3DE;border:0.5px solid #97C459;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:12px;color:#27500A;display:flex;align-items:center;gap:8px;}
+.gcal-banner.error{background:#FBEAF0;border-color:#ED93B1;color:#72243E;}
+.section-lbl{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
+@media(min-width:600px){body{max-width:480px;margin:0 auto;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>📱 Mood2Fit Planning</h1>
+    <button class="gcal-btn" id="gcal-btn" onclick="handleGcalAuth()">
+      <span id="gcal-btn-text">Connecter Google Agenda</span>
+    </button>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div class="week-nav">
+      <button onclick="changeWeek(-1)">‹</button>
+      <span class="week-label" id="week-label">Sem. 1</span>
+      <button onclick="changeWeek(1)">›</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('plan',this)">📅 Semaine</div>
+  <div class="tab" onclick="showTab('hours',this)">⏱ Heures</div>
+  <div class="tab" onclick="showTab('hist',this)">📊 Historique</div>
+</div>
+
+<div class="page active" id="page-plan">
+  <div style="height:12px"></div>
+  <div id="gcal-banner-area"></div>
+  <p class="section-lbl">1 — Choisis un bloc</p>
+  <div class="bloc-grid" id="bloc-grid"></div>
+  <div class="picker-wrap" id="picker">
+    <div class="picker-title"><div class="picker-dot" id="picker-dot"></div><span id="picker-title-text"></span></div>
+    <div class="picker-scroll" id="picker-days"></div>
+    <span class="picker-cancel" onclick="closePicker()">Annuler</span>
+  </div>
+  <p class="section-lbl">2 — Ta semaine</p>
+  <div class="week-grid">
+    <div class="wg-head" id="wg-head"></div>
+    <div class="wg-row" id="wg-mat"></div>
+    <div class="wg-row" id="wg-apm"></div>
+  </div>
+  <div class="tasks-panel" id="tasks-panel" style="display:none;">
+    <div class="tasks-title"><div class="picker-dot" id="tasks-dot"></div><span id="tasks-title-text"></span></div>
+    <div id="tasks-list"></div>
+  </div>
+  <div class="action-bar">
+    <button class="btn btn-primary" onclick="validateWeek()">✅ Valider la semaine</button>
+    <button class="btn btn-secondary btn-sm" onclick="clearWeek()">🗑 Vider</button>
+  </div>
+</div>
+
+<div class="page" id="page-hours">
+  <div style="height:12px"></div>
+  <div class="hours-card">
+    <div class="hours-title">⏱ Heures cette semaine</div>
+    <div id="hours-content"><p style="font-size:13px;color:var(--text3);text-align:center;padding:20px 0;">Remplis ta semaine pour voir les heures.</p></div>
+  </div>
+</div>
+
+<div class="page" id="page-hist">
+  <div style="height:12px"></div>
+  <div id="hist-content"><p style="font-size:13px;color:var(--text3);text-align:center;padding:40px 20px;">Valide des semaines pour voir l'historique.</p></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIG — MODIFIE CES DEUX LIGNES ─────────────────────
+const GOOGLE_CLIENT_ID = 'COLLE_TON_CLIENT_ID_ICI.apps.googleusercontent.com';
+const REDIRECT_URI     = window.location.origin + window.location.pathname;
+// ──────────────────────────────────────────────────────────
+
+const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
+const GCAL_API = 'https://www.googleapis.com/calendar/v3';
+const DAYS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+
+const META = {
+  prod1:{ label:'Produit J1', short:'Prod.J1', cls:'prod', dot:'#7F77DD', full:true,  halves:['mat','apm'] },
+  prod2:{ label:'Produit J2', short:'Prod.J2', cls:'prod', dot:'#7F77DD', full:true,  halves:['mat','apm'] },
+  biz:  { label:'Commercial', short:'Commer.', cls:'biz',  dot:'#D85A30', full:false, halves:['mat','apm'] },
+  insta:{ label:'Instagram',  short:'Insta',   cls:'insta',dot:'#D4537E', full:false, halves:['apm'] },
+  li:   { label:'LinkedIn',   short:'LinkedIn',cls:'li',   dot:'#378ADD', full:false, halves:['mat'] },
+  ops:  { label:'Site + NL',  short:'Site+NL', cls:'ops',  dot:'#639922', full:false, halves:['mat'] },
+  admin:{ label:'Admin',      short:'Admin',   cls:'admin',dot:'#BA7517', full:false, halves:['apm'] },
+  deca: { label:'Decathlon',  short:'Deca.',   cls:'deca', dot:'#888780', full:false, halves:['mat','apm'] },
+  cours:{ label:'Cours MIEE', short:'Cours',   cls:'cours',dot:'#D4840A', full:false, halves:['mat','apm'] },
+};
+const BLOCS_DEF = [
+  {key:'prod1',title:'📱 Produit — J1',sub:'Dev Cursor · Expo · Supabase',dur:'Journée entière',badge:'priorité 1'},
+  {key:'prod2',title:'🗺️ Produit — J2',sub:'Stratégie + dev après-midi',dur:'Journée entière',badge:'priorité 1'},
+  {key:'biz',  title:'📣 Commercial',  sub:'Pitch · partenaires · coaching',dur:'½j ou journée',badge:'priorité 2'},
+  {key:'insta',title:'📸 Instagram',   sub:'Posts · stories · réels · KPI',dur:'Après-midi (3h)',badge:'priorité 2'},
+  {key:'li',   title:'💼 LinkedIn',    sub:'Post de fond · engagement',dur:'Matin (1h30)',badge:'priorité 3'},
+  {key:'ops',  title:'🌐 Site + NL',   sub:'mood2fit.com · Brevo · Sentry',dur:'Matin (2h)',badge:'priorité 3'},
+  {key:'admin',title:'🧾 Admin',       sub:'Urssaf · facturation · décla.',dur:'Après-midi (2h)',badge:'priorité 3'},
+  {key:'deca', title:'🏪 Decathlon',   sub:'CDI · 9h–14h ou 14h–20h30',dur:'Demi-journée',badge:'contraint'},
+  {key:'cours',title:'🎓 Cours MIEE',  sub:'Présentiel Créteil · ponctuel',dur:'Journée ou ½j',badge:'ponctuel'},
+];
+const HOURS = {prod1:7,prod2:7,biz:3.5,insta:3,li:1.5,ops:2,admin:2,deca:5.5,cours:7};
+const SLOT_TIMES = {
+  mat:{start:'09:00',end:'13:30'},
+  apm:{start:'14:00',end:'20:30'},
+  full:{start:'09:00',end:'20:30'},
+};
+const TASKS = {
+  prod1:{title:'Produit — Journée dev',items:['Sprint Cursor : feature du jour (Trello)','Dev Expo / React Native : écran ou composant','Intégration Supabase · Edge Function · RLS','Tests simulateur iOS & Android','Commit + push + note Trello fin de journée']},
+  prod2:{title:'Produit — Stratégie + dev',items:['Matin : roadmap · backlog · arbitrages UX','Review feedback bêta-testeurs','Spec ou wireframe prochaine feature','Après-midi : implémentation des décisions','Déploiement ou test end-to-end si milestone']},
+  biz:  {title:'Commercial',items:['Relances partenaires : gyms, coachs, marques','Préparation ou répétition pitch Mood2Fit','Prospection ambassadeurs & influenceurs fitness','Suivi deals · mise à jour Notion/CRM','Séances conseil/coaching étudiants']},
+  insta:{title:'Instagram',items:['Visuels posts (Canva · templates)','Rédaction captions + hashtags','Tournage ou montage réels si prévu','Programmation semaine via Brevo / Later','Review KPIs : reach · saves · followers']},
+  li:   {title:'LinkedIn',items:['1 post de fond (entrepreneuriat / Mood2Fit)','Répondre aux commentaires de la semaine','Engagement : réagir au contenu pertinent','Màj profil ou bannière si besoin']},
+  ops:  {title:'Site + newsletter',items:['Màj mood2fit.com (Vercel) · mentions légales','Rédaction newsletter mensuelle Brevo','Check Sentry : erreurs prod','Upstash Redis : monitoring','Analytics : trafic · conversions · bounce']},
+  admin:{title:'Admin + compta',items:['Déclaration Urssaf (si trimestre en cours)','Émission et suivi factures consulting','Compta micro-entreprise à jour','CPAM · Finances publiques si courrier','Archivage contrats et documents légaux']},
+  deca: {title:'Decathlon (CDI)',items:['Créneau 9h–14h ou 14h–20h30','Indisponible pour Mood2Fit','Trajet : podcast · réflexion produit']},
+  cours:{title:'Cours / ateliers MIEE',items:['Cours présentiel à Créteil (MIEE/UPEC)','Déplacement depuis Chatou à prévoir','Entrepreneuriat · stratégie · market research','Ateliers ponctuels selon planning']},
+};
+
+// ─── AUTH STATE ───────────────────────────────────────────
+let accessToken = localStorage.getItem('gcal_token') || null;
+let tokenExpiry  = parseInt(localStorage.getItem('gcal_expiry') || '0');
+
+function isTokenValid(){ return accessToken && Date.now() < tokenExpiry - 60000; }
+
+function handleGcalAuth(){
+  if(isTokenValid()){ showToast('✅ Déjà connecté à Google Agenda'); return; }
+  startPKCE();
+}
+
+async function startPKCE(){
+  const verifier  = generateVerifier();
+  const challenge = await generateChallenge(verifier);
+  sessionStorage.setItem('pkce_verifier', verifier);
+  sessionStorage.setItem('pkce_week_offset', currentWeekOffset);
+  const state = btoa(Math.random().toString(36));
+  sessionStorage.setItem('pkce_state', state);
+  const params = new URLSearchParams({
+    client_id:     GOOGLE_CLIENT_ID,
+    redirect_uri:  REDIRECT_URI,
+    response_type: 'code',
+    scope:         SCOPES,
+    code_challenge:challenge,
+    code_challenge_method:'S256',
+    state,
+    access_type:   'online',
+    prompt:        'consent',
+  });
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
+}
+
+async function handleCallback(){
+  const params = new URLSearchParams(window.location.search);
+  const code  = params.get('code');
+  const state = params.get('state');
+  if(!code) return;
+  if(state !== sessionStorage.getItem('pkce_state')){
+    showBanner('Erreur de sécurité OAuth.','error'); return;
+  }
+  const verifier = sessionStorage.getItem('pkce_verifier');
+  history.replaceState({}, '', window.location.pathname);
+  try{
+    const res = await fetch('https://oauth2.googleapis.com/token',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({
+        code, client_id:GOOGLE_CLIENT_ID,
+        redirect_uri:REDIRECT_URI,
+        grant_type:'authorization_code',
+        code_verifier:verifier,
+      })
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error_description || data.error);
+    accessToken = data.access_token;
+    tokenExpiry = Date.now() + data.expires_in * 1000;
+    localStorage.setItem('gcal_token', accessToken);
+    localStorage.setItem('gcal_expiry', tokenExpiry);
+    currentWeekOffset = parseInt(sessionStorage.getItem('pkce_week_offset') || '0');
+    updateGcalBtn();
+    showBanner('✅ Connecté à Google Agenda ! Valide ta semaine pour l'y envoyer.','ok');
+  } catch(e){
+    showBanner('Erreur de connexion : ' + e.message, 'error');
+  }
+}
+
+function generateVerifier(){
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+async function generateChallenge(v){
+  const enc = new TextEncoder().encode(v);
+  const hash = await crypto.subtle.digest('SHA-256', enc);
+  return btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+function updateGcalBtn(){
+  const btn = document.getElementById('gcal-btn');
+  const txt = document.getElementById('gcal-btn-text');
+  if(isTokenValid()){
+    btn.classList.add('connected');
+    txt.innerHTML = '<span class="dot"></span> Google Agenda connecté';
+  } else {
+    btn.classList.remove('connected');
+    txt.textContent = 'Connecter Google Agenda';
+  }
+}
+
+function showBanner(msg, type){
+  const area = document.getElementById('gcal-banner-area');
+  area.innerHTML = `<div class="gcal-banner ${type==='error'?'error':''}">${msg}</div>`;
+  setTimeout(()=>{ area.innerHTML=''; }, 6000);
+}
+
+// ─── GOOGLE CALENDAR API ──────────────────────────────────
+async function pushWeekToGcal(state){
+  if(!isTokenValid()){
+    showBanner('Connecte d\'abord Google Agenda.','error'); return false;
+  }
+  const monday = getMonday(currentWeekOffset);
+  const weekKey = getWeekKey(currentWeekOffset);
+  const added = new Set();
+  const promises = [];
+  let created = 0;
+
+  for(let di=0; di<7; di++){
+    for(const half of ['mat','apm']){
+      const k = di+'_'+half;
+      const key = state[k];
+      if(!key) continue;
+      const m = META[key];
+      const eventKey = key+'_'+di;
+      if(m.full && added.has(eventKey)) continue;
+      added.add(eventKey);
+
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + di);
+      const dateStr = date.toISOString().slice(0,10);
+
+      const times = m.full ? SLOT_TIMES.full : SLOT_TIMES[half];
+      const t = TASKS[key];
+
+      const event = {
+        summary: `[M2F] ${m.label}${m.full?' (journée)':half==='mat'?' (matin)':' (après-midi)'}`,
+        description: t.items.map(i=>'→ '+i).join('\n'),
+        start:{ dateTime:`${dateStr}T${times.start}:00`, timeZone:'Europe/Paris' },
+        end:  { dateTime:`${dateStr}T${times.end}:00`,   timeZone:'Europe/Paris' },
+        colorId: key.startsWith('prod') ? '9' : key==='insta'?'4':key==='biz'?'6':key==='li'?'1':key==='ops'?'2':key==='admin'?'5':key==='deca'?'8':'5',
+        extendedProperties:{ private:{ m2f:'true', weekKey, blocKey:key } }
+      };
+
+      promises.push(
+        fetch(`${GCAL_API}/calendars/primary/events`, {
+          method:'POST',
+          headers:{ Authorization:`Bearer ${accessToken}`, 'Content-Type':'application/json' },
+          body: JSON.stringify(event)
+        }).then(r=>{ if(r.ok) created++; return r; })
+      );
+    }
+  }
+  await Promise.all(promises);
+  return created;
+}
+
+async function deleteWeekFromGcal(weekKey){
+  if(!isTokenValid()) return;
+  try{
+    const res = await fetch(
+      `${GCAL_API}/calendars/primary/events?privateExtendedProperty=m2f%3Dtrue&privateExtendedProperty=weekKey%3D${weekKey}&maxResults=50`,
+      { headers:{ Authorization:`Bearer ${accessToken}` } }
+    );
+    const data = await res.json();
+    if(!data.items) return;
+    await Promise.all(data.items.map(ev =>
+      fetch(`${GCAL_API}/calendars/primary/events/${ev.id}`,{
+        method:'DELETE',
+        headers:{ Authorization:`Bearer ${accessToken}` }
+      })
+    ));
+  } catch(e){ console.warn('Delete gcal error', e); }
+}
+
+// ─── WEEK STATE ───────────────────────────────────────────
+let currentWeekOffset = 0;
+let allWeeks = JSON.parse(localStorage.getItem('m2f_weeks')||'{}');
+let selectedBloc = null;
+let activePicker = null;
+
+function getWeekKey(o){
+  const monday = getMonday(o);
+  return monday.toISOString().slice(0,10);
+}
+function getWeekState(o){
+  const k = getWeekKey(o);
+  if(!allWeeks[k]) allWeeks[k]={};
+  return allWeeks[k];
+}
+function saveState(){
+  localStorage.setItem('m2f_weeks', JSON.stringify(allWeeks));
+}
+function getMonday(o){
+  const now = new Date();
+  const day = now.getDay();
+  const diff = day===0?-6:1-day;
+  const m = new Date(now);
+  m.setDate(now.getDate()+diff+o*7);
+  m.setHours(0,0,0,0);
+  return m;
+}
+function getISOWeek(d){
+  const date = new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  date.setUTCDate(date.getUTCDate()+4-(date.getUTCDay()||7));
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date-yearStart)/86400000)+1)/7);
+}
+function formatWeekLabel(o){
+  const mon = getMonday(o);
+  const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+  const fmt = d=>d.getDate()+'/'+(d.getMonth()+1);
+  return `S${getISOWeek(mon)} · ${fmt(mon)}–${fmt(sun)}`;
+}
+
+// ─── RENDER BLOCS ─────────────────────────────────────────
+function renderBlocGrid(){
+  const grid = document.getElementById('bloc-grid');
+  grid.innerHTML='';
+  BLOCS_DEF.forEach(b=>{
+    const m=META[b.key];
+    const div=document.createElement('div');
+    div.className=`bloc-card b-${m.cls}`;
+    div.style.cssText=`--sel-c:${m.dot};--sel-s:${m.dot}30;`;
+    div.id='bloc-'+b.key;
+    div.innerHTML=`<div class="bc-title">${b.title}</div><div class="bc-sub">${b.sub}</div><div class="bc-dur">${b.dur}</div><span class="bc-badge">${b.badge}</span>`;
+    div.onclick=()=>openPicker(b.key);
+    grid.appendChild(div);
+  });
+}
+
+// ─── PICKER ───────────────────────────────────────────────
+function openPicker(key){
+  if(activePicker===key){closePicker();return;}
+  activePicker=key; selectedBloc=key;
+  document.querySelectorAll('.bloc-card').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('bloc-'+key).classList.add('selected');
+  const m=META[key];
+  const state=getWeekState(currentWeekOffset);
+  document.getElementById('picker-dot').style.background=m.dot;
+  document.getElementById('picker-title-text').textContent=m.label+' — Choisir un créneau';
+  const daysEl=document.getElementById('picker-days');
+  daysEl.innerHTML='';
+  DAYS.forEach((d,di)=>{
+    const grp=document.createElement('div');
+    grp.className='pday';
+    const lbl=document.createElement('div');
+    lbl.className='pday-lbl'; lbl.textContent=d;
+    grp.appendChild(lbl);
+    const halves=m.full?['full']:m.halves;
+    halves.forEach(half=>{
+      const btn=document.createElement('div');
+      if(m.full){
+        const km=di+'_mat',ka=di+'_apm';
+        const mine=state[km]===key||state[ka]===key;
+        const free=!state[km]&&!state[ka];
+        btn.textContent=mine?'✓ Posé':'Jour';
+        btn.className='pslot'+(mine?' taken':(!free?' blocked':''));
+        if(!mine&&free) btn.onclick=()=>{place(key,di,'full');closePicker();};
+      } else {
+        const k=di+'_'+half;
+        const occ=state[k];
+        const label=half==='mat'?'Matin':'Après-m.';
+        btn.textContent=occ===key?'✓ '+label:label;
+        btn.className='pslot'+(occ===key?' taken':(occ?' blocked':''));
+        if(!occ) btn.onclick=()=>{place(key,di,half);closePicker();};
+      }
+      grp.appendChild(btn);
+    });
+    daysEl.appendChild(grp);
+  });
+  document.getElementById('picker').classList.add('open');
+  document.getElementById('picker').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closePicker(){
+  activePicker=null; selectedBloc=null;
+  document.getElementById('picker').classList.remove('open');
+  document.querySelectorAll('.bloc-card').forEach(b=>b.classList.remove('selected'));
+}
+
+// ─── PLACEMENT ────────────────────────────────────────────
+function place(key,di,half){
+  const state=getWeekState(currentWeekOffset);
+  if(half==='full'){state[di+'_mat']=key;state[di+'_apm']=key;}
+  else state[di+'_'+half]=key;
+  saveState(); renderGrid(); renderHours();
+}
+function remove(di,half){
+  const state=getWeekState(currentWeekOffset);
+  const key=state[di+'_'+half];
+  if(!key)return;
+  if(META[key].full){delete state[di+'_mat'];delete state[di+'_apm'];}
+  else delete state[di+'_'+half];
+  saveState(); renderGrid(); renderHours();
+  document.getElementById('tasks-panel').style.display='none';
+}
+
+// ─── RENDER GRID ──────────────────────────────────────────
+function renderGrid(){
+  const state=getWeekState(currentWeekOffset);
+  const head=document.getElementById('wg-head');
+  head.innerHTML='<div class="wg-dh"></div>';
+  DAYS.forEach(d=>{const c=document.createElement('div');c.className='wg-dh';c.textContent=d;head.appendChild(c);});
+  ['mat','apm'].forEach(half=>{
+    const row=document.getElementById('wg-'+half);
+    row.innerHTML=`<div class="wg-lbl">${half==='mat'?'Matin':'Apm'}</div>`;
+    for(let di=0;di<7;di++){
+      const k=di+'_'+half;
+      const key=state[k];
+      const cell=document.createElement('div');
+      cell.className='wg-cell'+(key?' filled':' empty');
+      if(key){
+        const m=META[key];
+        cell.innerHTML=`<div class="cell-inner" style="background:var(--${m.cls}-bg);"><div class="cell-title" style="color:var(--${m.cls})">${m.short}</div></div><span class="cell-rm" onclick="event.stopPropagation();remove(${di},'${half}')">×</span>`;
+        cell.onclick=()=>showTasks(key);
+      }
+      row.appendChild(cell);
+    }
+  });
+}
+
+// ─── TÂCHES ───────────────────────────────────────────────
+function showTasks(key){
+  const t=TASKS[key];const m=META[key];
+  document.getElementById('tasks-dot').style.background=m.dot;
+  document.getElementById('tasks-title-text').textContent=t.title;
+  document.getElementById('tasks-list').innerHTML=t.items.map(i=>`<div class="task-item">${i}</div>`).join('');
+  const p=document.getElementById('tasks-panel');
+  p.style.display='block';
+  p.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ─── HEURES ───────────────────────────────────────────────
+function calcHours(state){
+  const counts={};
+  Object.values(state).forEach(k=>{if(k) counts[k]=(counts[k]||0)+1;});
+  const h={};
+  Object.entries(counts).forEach(([k,n])=>{
+    const m=META[k];
+    h[k]=m.full?HOURS[k]:(n*HOURS[k]/(m.halves.length||1));
+  });
+  return h;
+}
+function renderHours(){
+  const state=getWeekState(currentWeekOffset);
+  const hm=calcHours(state);
+  const total=Object.values(hm).reduce((a,b)=>a+b,0);
+  const maxH=Math.max(...Object.values(hm),1);
+  const order=['prod1','prod2','biz','insta','li','ops','admin','deca','cours'];
+  let html='';
+  order.forEach(k=>{
+    if(!hm[k])return;
+    const m=META[k];const h=hm[k];const pct=Math.round((h/maxH)*100);
+    html+=`<div class="hours-row"><div class="hours-dot" style="background:${m.dot}"></div><div class="hours-label">${m.label}</div><div class="hours-bar-wrap"><div class="hours-bar" style="width:${pct}%;background:${m.dot}"></div></div><div class="hours-val">${h%1===0?h:h.toFixed(1)}h</div></div>`;
+  });
+  if(!html){document.getElementById('hours-content').innerHTML='<p style="font-size:13px;color:var(--text3);text-align:center;padding:20px 0;">Remplis ta semaine pour voir les heures.</p>';return;}
+  html+=`<div class="hours-total"><span>Total</span><span>${total%1===0?total:total.toFixed(1)}h</span></div>`;
+  document.getElementById('hours-content').innerHTML=html;
+}
+
+// ─── HISTORIQUE ───────────────────────────────────────────
+function renderHist(){
+  const validated=JSON.parse(localStorage.getItem('m2f_validated')||'[]');
+  const el=document.getElementById('hist-content');
+  if(!validated.length){el.innerHTML='<p style="font-size:13px;color:var(--text3);text-align:center;padding:40px 20px;">Valide des semaines pour voir l\'historique.</p>';return;}
+  el.innerHTML='';
+  [...validated].reverse().forEach(entry=>{
+    const div=document.createElement('div');
+    div.className='hist-week';
+    const chips=Object.entries(entry.hours).map(([k,h])=>{const m=META[k];return`<span class="hist-chip" style="background:${m.dot}22;color:${m.dot}">${m.label} ${h%1===0?h:h.toFixed(1)}h</span>`;}).join('');
+    const total=Object.values(entry.hours).reduce((a,b)=>a+b,0);
+    const gcalBadge=entry.gcal?'<span style="font-size:10px;background:#EAF3DE;color:#27500A;padding:2px 7px;border-radius:20px;font-weight:600;">📅 Google Agenda</span>':'';
+    div.innerHTML=`<div class="hist-title"><span>📅 ${entry.label}</span><span style="display:flex;align-items:center;gap:6px;">${gcalBadge}<span style="font-size:12px;color:var(--text3)">${total%1===0?total:total.toFixed(1)}h</span></span></div><div class="hist-chips">${chips}</div>`;
+    el.appendChild(div);
+  });
+}
+
+// ─── VALIDER ──────────────────────────────────────────────
+async function validateWeek(){
+  const state=getWeekState(currentWeekOffset);
+  if(!Object.keys(state).length){showToast('⚠️ Semaine vide !');return;}
+  const label=formatWeekLabel(currentWeekOffset);
+  const weekKey=getWeekKey(currentWeekOffset);
+  const hm=calcHours(state);
+  const validated=JSON.parse(localStorage.getItem('m2f_validated')||'[]');
+  const idx=validated.findIndex(v=>v.label===label);
+  let gcalOk=false;
+
+  if(isTokenValid()){
+    showToast('⏳ Envoi vers Google Agenda...');
+    await deleteWeekFromGcal(weekKey);
+    const created=await pushWeekToGcal(state);
+    gcalOk=created>0;
+    if(gcalOk) showToast(`✅ ${created} événements créés dans Google Agenda !`);
+    else showBanner('Erreur lors de l\'envoi Google Agenda.','error');
+  } else {
+    showToast('✅ Semaine sauvegardée (connecte Google Agenda pour sync)');
+  }
+
+  const entry={label,weekKey,hours:hm,state:{...state},gcal:gcalOk};
+  if(idx>=0) validated[idx]=entry; else validated.push(entry);
+  localStorage.setItem('m2f_validated',JSON.stringify(validated));
+}
+
+function clearWeek(){
+  if(!confirm('Vider la semaine ?'))return;
+  const key=getWeekKey(currentWeekOffset);
+  allWeeks[key]={};
+  saveState();renderGrid();renderHours();
+  document.getElementById('tasks-panel').style.display='none';
+  showToast('🗑 Semaine vidée');
+}
+
+// ─── NAV ──────────────────────────────────────────────────
+function changeWeek(delta){
+  currentWeekOffset+=delta;
+  document.getElementById('week-label').textContent=formatWeekLabel(currentWeekOffset);
+  closePicker();renderGrid();renderHours();
+  document.getElementById('tasks-panel').style.display='none';
+}
+function showTab(tab,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  el.classList.add('active');
+  if(tab==='hours')renderHours();
+  if(tab==='hist')renderHist();
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+if(window.location.search.includes('code=')) handleCallback();
+document.getElementById('week-label').textContent=formatWeekLabel(0);
+updateGcalBtn();
+renderBlocGrid();
+renderGrid();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
