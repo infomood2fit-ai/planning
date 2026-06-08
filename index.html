@@ -67,6 +67,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pslot.taken{background:#f0eeea;color:#ccc;text-decoration:line-through;cursor:default;font-style:italic;}
 .pslot.blocked{color:#ddd;cursor:default;font-style:italic;}
 .pcancel{margin-top:10px;font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;display:inline-block;}
+.picker-actions{display:flex;align-items:center;gap:12px;margin-top:12px;}
+.pedit-btn{font-size:11px;font-weight:700;padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--pc,#ccc);background:#fff;color:var(--text2);cursor:pointer;}
+.pedit-btn:active{background:#f5f3ef;}
+.ptime-form{margin-top:12px;background:#f8f7f5;border-radius:var(--rs);padding:12px;display:none;border:1px solid var(--border);}
+.ptime-form.open{display:block;}
+.ptime-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;}
+.ptime-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.ptime-row label{font-size:11px;color:var(--text2);font-weight:600;min-width:72px;}
+.ptime-row input[type=time]{font-size:12px;padding:5px 8px;border:1.5px solid var(--border);border-radius:var(--rs);color:var(--text);background:#fff;flex:1;min-width:88px;}
+.ptime-sep{font-size:11px;color:var(--text3);}
+.ptime-save{margin-top:8px;background:#3C3489;color:#fff;border:none;padding:7px 16px;border-radius:var(--rs);font-size:12px;font-weight:700;cursor:pointer;width:100%;}
+.ptime-save:active{opacity:.85;}
 
 /* GRILLE */
 .wgrid{background:#fff;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:14px;}
@@ -174,7 +186,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="picker" id="picker">
     <div class="ptitle"><div class="pdot" id="pdot"></div><span id="ptxt"></span></div>
     <div class="pscroll" id="pdays"></div>
-    <span class="pcancel" onclick="closePicker()">Annuler</span>
+    <div class="ptime-form" id="ptime-form">
+      <div class="ptime-title">✏️ Modifier les horaires de ce bloc</div>
+      <div class="ptime-row" id="pt_mat_row"><label>🌅 Matin</label><input type="time" id="pt_mat_s"><span class="ptime-sep">→</span><input type="time" id="pt_mat_e"></div>
+      <div class="ptime-row" id="pt_apm_row"><label>🌆 Après-midi</label><input type="time" id="pt_apm_s"><span class="ptime-sep">→</span><input type="time" id="pt_apm_e"></div>
+      <button class="ptime-save" onclick="savePickerTimes()">💾 Appliquer ces horaires</button>
+    </div>
+    <div class="picker-actions">
+      <button class="pedit-btn" id="pedit-btn" onclick="togglePickerEdit()">✏️ Modifier les horaires</button>
+      <span class="pcancel" onclick="closePicker()">Annuler</span>
+    </div>
   </div>
   <p class="slbl">2 — Ta semaine</p>
   <div class="wgrid">
@@ -557,13 +578,37 @@ function openPicker(key){
     const lbl=document.createElement('div'); lbl.className='pdlbl'; lbl.textContent=d; grp.appendChild(lbl);
     if(m.full){
       const km=sk(di,'mat'),ka=sk(di,'apm');
-      const mine=state[km]===key||state[ka]===key,free=!state[km]&&!state[ka];
-      const ts=getTime(key,'mat','s'),te=getTime(key,'apm','e');
-      const btn=document.createElement('div');
-      btn.className='pslot'+(mine?' taken':(!free?' blocked':''));
-      btn.innerHTML=(mine?'✓ Posé':'Journée')+'<br><span style="font-size:9px;opacity:.7">'+ts+'–'+te+'</span>';
-      if(!mine&&free) btn.onclick=()=>{place(key,di,'full');closePicker();};
-      grp.appendChild(btn);
+      const hasMat=state[km]===key, hasApm=state[ka]===key;
+      const bothFree=!state[km]&&!state[ka];
+      if(bothFree){
+        const ts=getTime(key,'mat','s'),te=getTime(key,'apm','e');
+        const btn=document.createElement('div');
+        btn.className='pslot';
+        btn.innerHTML='Journée<br><span style="font-size:9px;opacity:.7">'+ts+'–'+te+'</span>';
+        btn.onclick=()=>{place(key,di,'full');closePicker();};
+        grp.appendChild(btn);
+      } else {
+        ['mat','apm'].forEach(h=>{
+          const k=sk(di,h), occ=state[k];
+          const ts=getTime(key,h,'s'),te=getTime(key,h,'e');
+          const lbl2=h==='mat'?'Matin':'Après-m.';
+          const btn=document.createElement('div');
+          if(occ===key){
+            btn.className='pslot taken';
+            btn.style.cssText='position:relative;cursor:pointer;text-decoration:none;';
+            btn.innerHTML='✓ '+lbl2+'<br><span style="font-size:9px;opacity:.7">'+ts+'–'+te+'</span><span style="position:absolute;top:2px;right:4px;font-size:13px;font-weight:700;color:#999;">×</span>';
+            btn.onclick=((_di,_h,_key)=>()=>{remove(_di,_h);openPicker(_key);})(di,h,key);
+          } else if(occ){
+            btn.className='pslot blocked';
+            btn.innerHTML=lbl2+'<br><span style="font-size:9px;opacity:.7">occupé</span>';
+          } else {
+            btn.className='pslot';
+            btn.innerHTML=lbl2+'<br><span style="font-size:9px;opacity:.7">'+ts+'–'+te+'</span>';
+            btn.onclick=((_di,_h)=>()=>{place(key,_di,_h);closePicker();})(di,h);
+          }
+          grp.appendChild(btn);
+        });
+      }
     } else {
       m.halves.forEach(h=>{
         const k=sk(di,h),occ=state[k];
@@ -585,7 +630,56 @@ function openPicker(key){
 function closePicker(){
   activeBloc=null;
   document.getElementById('picker').classList.remove('on');
+  document.getElementById('ptime-form').classList.remove('open');
   document.querySelectorAll('.bcard').forEach(b=>b.classList.remove('sel'));
+}
+
+function togglePickerEdit(){
+  if(!activeBloc) return;
+  const form=document.getElementById('ptime-form');
+  const isOpen=form.classList.toggle('open');
+  document.getElementById('pedit-btn').textContent=isOpen?'▲ Masquer':'✏️ Modifier les horaires';
+  if(!isOpen) return;
+  const m=META[activeBloc];
+  // Remplir les champs avec les valeurs actuelles
+  const matS=document.getElementById('pt_mat_s');
+  const matE=document.getElementById('pt_mat_e');
+  const apmS=document.getElementById('pt_apm_s');
+  const apmE=document.getElementById('pt_apm_e');
+  const matRow=document.getElementById('pt_mat_row');
+  const apmRow=document.getElementById('pt_apm_row');
+  // Afficher/masquer selon les créneaux disponibles pour ce bloc
+  const hasMat=m.halves.includes('mat')||m.full;
+  const hasApm=m.halves.includes('apm')||m.full;
+  matRow.style.display=hasMat?'flex':'none';
+  apmRow.style.display=hasApm?'flex':'none';
+  if(hasMat){ matS.value=getTime(activeBloc,'mat','s'); matE.value=getTime(activeBloc,'mat','e'); }
+  if(hasApm){ apmS.value=getTime(activeBloc,'apm','s'); apmE.value=getTime(activeBloc,'apm','e'); }
+}
+
+function savePickerTimes(){
+  if(!activeBloc) return;
+  const m=META[activeBloc];
+  const s=settings[activeBloc]||{};
+  const hasMat=m.halves.includes('mat')||m.full;
+  const hasApm=m.halves.includes('apm')||m.full;
+  if(hasMat){
+    s.mat_s=document.getElementById('pt_mat_s').value;
+    s.mat_e=document.getElementById('pt_mat_e').value;
+  }
+  if(hasApm){
+    s.apm_s=document.getElementById('pt_apm_s').value;
+    s.apm_e=document.getElementById('pt_apm_e').value;
+  }
+  settings[activeBloc]=s;
+  localStorage.setItem('m2f_s',JSON.stringify(settings));
+  // Rafraîchir le picker pour afficher les nouveaux horaires
+  const key=activeBloc;
+  document.getElementById('ptime-form').classList.remove('open');
+  document.getElementById('pedit-btn').textContent='✏️ Modifier les horaires';
+  openPicker(key); // rouvre avec les nouveaux horaires
+  renderGrid();
+  toast('✅ Horaires mis à jour !');
 }
 
 // ══ PLACEMENT ═══════════════════════════════════════════
@@ -598,8 +692,8 @@ function place(key,di,h){
 
 function remove(di,h){
   const state=ws(weekOffset),key=state[sk(di,h)]; if(!key) return;
-  if(META[key].full){delete state[sk(di,'mat')];delete state[sk(di,'apm')];}
-  else delete state[sk(di,h)];
+  // Supprime uniquement la demi-journée cliquée, même pour un bloc journée entière
+  delete state[sk(di,h)];
   save(); renderGrid(); renderHours();
   document.getElementById('tpanel').style.display='none';
 }
