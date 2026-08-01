@@ -172,7 +172,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 /* ─── OTHER PAGES ─── */
 .page-view{display:none;flex:1;overflow:hidden;}
 .page-view.active{display:flex;}
-#page-stats.page-view.active,#page-settings.page-view.active{display:block;overflow-y:auto;padding:24px;}
+#page-stats.page-view.active,#page-settings.page-view.active,#page-tasks.page-view.active{display:block;overflow-y:auto;padding:24px;}
+#page-tasks.page-view.active{padding:0;background:var(--bg);}
 .page-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:20px;box-shadow:var(--shadow);}
 .page-card h2{font-size:16px;font-weight:700;margin-bottom:16px;}
 .hours-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;}
@@ -187,6 +188,49 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .hist-title{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;}
 .hist-chips{display:flex;flex-wrap:wrap;gap:5px;}
 .hist-chip{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;}
+
+/* ─── TASK TRACKER ─── */
+.tracker-wrap{font-family:'Inter',system-ui,sans-serif;background:#12141A;color:#EDEEF2;min-height:100%;padding:28px 24px;border-radius:0;}
+.tracker-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px;}
+.tracker-brand{font-size:12px;letter-spacing:1.5px;color:#8B8FA3;text-transform:uppercase;margin-bottom:4px;}
+.tracker-title{font-size:26px;font-weight:700;margin:0;letter-spacing:-.5px;}
+.tracker-stats{display:flex;gap:12px;}
+.tracker-stat{background:#1B1E27;border-radius:12px;padding:10px 16px;text-align:center;min-width:90px;}
+.tracker-stat-val{font-size:22px;font-weight:700;}
+.tracker-stat-lbl{font-size:11px;color:#8B8FA3;margin-top:2px;}
+.tracker-blocs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px;}
+.tracker-bloc-card{background:#1B1E27;border-radius:14px;padding:16px;}
+.tracker-bloc-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;font-weight:600;}
+.tracker-bloc-sub{font-size:11px;color:#8B8FA3;margin-bottom:10px;}
+.tracker-bloc-bar{height:6px;background:#2A2E3A;border-radius:4px;overflow:hidden;}
+.tracker-bloc-fill{height:100%;border-radius:4px;transition:width .3s;}
+.tracker-bloc-count{font-size:11px;color:#8B8FA3;margin-top:6px;}
+.tracker-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.tracker-tab{background:#1B1E27;color:#C4C7D4;border:none;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.tracker-tab.active{background:#8B7CF6;color:#fff;}
+.tracker-tab-add{margin-left:auto;display:flex;align-items:center;gap:6px;background:transparent;border:1px solid #2A2E3A;color:#C4C7D4;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;}
+.tracker-tab-add:hover{border-color:#8B7CF6;color:#EDEEF2;}
+.tracker-add-form{display:none;gap:8px;margin-bottom:16px;flex-wrap:wrap;background:#1B1E27;padding:12px;border-radius:12px;}
+.tracker-add-form.open{display:flex;}
+.tracker-add-input{flex:1;min-width:160px;background:#12141A;border:1px solid #2A2E3A;border-radius:8px;padding:8px 10px;color:#EDEEF2;font-size:13px;font-family:inherit;}
+.tracker-add-input:focus{outline:none;border-color:#8B7CF6;}
+.tracker-add-select{background:#12141A;border:1px solid #2A2E3A;border-radius:8px;padding:8px 10px;color:#EDEEF2;font-size:13px;font-family:inherit;}
+.tracker-add-btn{background:#8B7CF6;border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+.tracker-overdue{display:flex;align-items:center;gap:8px;color:#EF5B5B;font-size:12px;margin-bottom:10px;}
+.tracker-list{display:flex;flex-direction:column;gap:8px;padding-bottom:24px;}
+.tracker-empty{color:#8B8FA3;font-size:13px;padding:24px 0;text-align:center;}
+.tracker-item{display:flex;align-items:center;gap:12px;background:#1B1E27;border-radius:12px;padding:12px 14px;border-left:3px solid;}
+.tracker-item.done{opacity:.5;}
+.tracker-check{background:none;border:none;cursor:pointer;padding:0;display:flex;flex-shrink:0;}
+.tracker-item-body{flex:1;min-width:0;}
+.tracker-item-title{font-size:14px;font-weight:500;}
+.tracker-item.done .tracker-item-title{text-decoration:line-through;}
+.tracker-item-note{font-size:11.5px;color:#8B8FA3;margin-top:2px;}
+.tracker-item-date{font-size:11.5px;color:#8B8FA3;white-space:nowrap;flex-shrink:0;}
+.tracker-item-date.overdue{color:#EF5B5B;font-weight:700;}
+.tracker-prio{width:6px;height:6px;border-radius:99px;flex-shrink:0;}
+.tracker-remove{background:none;border:none;cursor:pointer;color:#4A4E5C;display:flex;padding:0;flex-shrink:0;}
+.tracker-remove:hover{color:#EF5B5B;}
 
 @media(max-width:900px){
   .sidebar{display:none;}
@@ -324,6 +368,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Tasks tracker page -->
+    <div class="page-view" id="page-tasks">
+      <div class="tracker-wrap" id="tracker-root"></div>
     </div>
 
     <!-- Stats page -->
@@ -854,7 +903,8 @@ function showPage(page, el){
   if(page === 'plan'){
     document.getElementById('page-plan').classList.add('active');
   } else if(page === 'tasks'){
-    document.getElementById('page-plan').classList.add('active');
+    document.getElementById('page-tasks').classList.add('active');
+    renderTracker();
   } else if(page === 'stats'){
     document.getElementById('page-stats').classList.add('active');
     renderHours(); renderHist();
@@ -1054,6 +1104,255 @@ function showToast(msg){
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ─── TASK TRACKER ───────────────────────────────────────────
+const TRACKER_STORAGE = 'm2f-tracker-tasks-v1';
+const TRACKER_LAUNCH = new Date('2026-09-07T00:00:00');
+const TRACKER_BLOCS = {
+  produit: { label:'Bloc 1 · Produit', color:'#EF5B5B', sub:'Dates dures — non négociable', icon:'rocket' },
+  reseaux: { label:'Bloc 2 · Réseaux', color:'#F2A649', sub:'Déclenché par le produit', icon:'megaphone' },
+  sept:    { label:'Bloc 3 · Septembre', color:'#5EC8C0', sub:'Structuration & doc', icon:'filestack' },
+};
+const TRACKER_SEED = [
+  { id:'p1', bloc:'produit', title:'Android : rollout 20%', date:'2026-08-03', prio:1, done:false, note:'' },
+  { id:'p2', bloc:'produit', title:'Ouvrir inscription Apple Developer', date:'2026-08-03', prio:1, done:false, note:'' },
+  { id:'p3', bloc:'produit', title:'Ouverture TestFlight', date:'2026-08-20', prio:1, done:false, note:'si possible' },
+  { id:'p4', bloc:'produit', title:'Android 100% (lancement)', date:'2026-09-07', prio:1, done:false, note:'' },
+  { id:'p5', bloc:'produit', title:'Apple live (lancement)', date:'2026-09-07', prio:1, done:false, note:'' },
+  { id:'r1', bloc:'reseaux', title:'LinkedIn : annonce testeurs + lancement Android', date:'2026-08-03', prio:2, done:false, note:'' },
+  { id:'r2', bloc:'reseaux', title:'Instagram : recrutement testeurs', date:'2026-08-03', prio:2, done:false, note:'' },
+  { id:'r3', bloc:'reseaux', title:'Newsletter : consignes beta testeurs', date:'2026-08-20', prio:2, done:false, note:'à envoyer dès TestFlight' },
+  { id:'r4', bloc:'reseaux', title:'Instagram : annonce sorties + republication + relance', date:'2026-08-20', prio:2, done:false, note:'' },
+  { id:'r5', bloc:'reseaux', title:'Newsletter : contenu "à faire en septembre"', date:'2026-09-01', prio:3, done:false, note:'' },
+  { id:'r6', bloc:'reseaux', title:'LinkedIn : remerciement équipes', date:'2026-09-08', prio:3, done:false, note:'après lancement Apple' },
+  { id:'s1', bloc:'sept', title:'PPT — Histoire M2F (depuis le début)', date:'2026-08-15', prio:2, done:false, note:'Phase A · collecte, base des autres decks' },
+  { id:'s2', bloc:'sept', title:'PPT — Étude de marché (centraliser data)', date:'2026-08-15', prio:2, done:false, note:'Phase A · collecte' },
+  { id:'s3', bloc:'sept', title:'PPT — BKO', date:'2026-09-01', prio:2, done:false, note:'Phase B' },
+  { id:'s4', bloc:'sept', title:'PPT — Gestion des réseaux', date:'2026-09-01', prio:2, done:false, note:'Phase B' },
+  { id:'s5', bloc:'sept', title:'PPT — Financier / juridique', date:'2026-09-01', prio:2, done:false, note:'Phase B' },
+  { id:'s6', bloc:'sept', title:'Réflexion financement ouverture d\'entreprise', date:'2026-09-01', prio:2, done:false, note:'Phase B' },
+  { id:'s7', bloc:'sept', title:'PPT — Présentation produit globale', date:'2026-09-12', prio:3, done:false, note:'Phase C · besoin de vraies métriques post-launch' },
+  { id:'s8', bloc:'sept', title:'PPT — Stratégie acquisition + offre (beta/premium)', date:'2026-09-12', prio:3, done:false, note:'Phase C' },
+  { id:'s9', bloc:'sept', title:'Recrutement alternant (ex-stagiaire)', date:'2026-09-15', prio:3, done:false, note:'Phase C' },
+  { id:'s10', bloc:'sept', title:'PPT — Pitch global investisseurs', date:'2026-09-20', prio:1, done:false, note:'Phase C · dernier, s\'appuie sur tous les autres decks' },
+];
+
+let trackerTasks = [];
+let trackerTab = 'semaine';
+let trackerShowAdd = false;
+
+function trackerToday(){
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  return d;
+}
+function trackerStartOfWeek(d){
+  const x = new Date(d);
+  const day = (x.getDay() + 6) % 7;
+  x.setDate(x.getDate() - day);
+  x.setHours(0,0,0,0);
+  return x;
+}
+function trackerFmtDate(d){
+  return new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
+}
+function trackerPrioColor(p){
+  return p === 1 ? '#EF5B5B' : p === 2 ? '#F2A649' : '#5EC8C0';
+}
+function trackerIcon(name, color){
+  const icons = {
+    rocket:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>',
+    megaphone:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2"><path d="M3 11v3a4 4 0 004 4h1"/><path d="M11 6L19 2v20l-8-4H5a4 4 0 01-4-4V10a4 4 0 014-4h6z"/></svg>',
+    filestack:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2"><path d="M16 2H8l-2 6h12l-2-6z"/><path d="M4 10h16v10a2 2 0 01-2 2H6a2 2 0 01-2-2V10z"/></svg>',
+    flame:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF5B5B" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 003.5 0z"/></svg>',
+    circle:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4A4E5C" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
+    check:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5EC8C0" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    plus:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    x:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  };
+  return icons[name] || '';
+}
+
+function loadTrackerTasks(){
+  try{
+    const raw = localStorage.getItem(TRACKER_STORAGE);
+    trackerTasks = raw ? JSON.parse(raw) : TRACKER_SEED.map(t => ({...t}));
+  } catch(e){
+    trackerTasks = TRACKER_SEED.map(t => ({...t}));
+  }
+}
+function saveTrackerTasks(){
+  localStorage.setItem(TRACKER_STORAGE, JSON.stringify(trackerTasks));
+}
+
+function trackerBlocProgress(bloc){
+  const list = trackerTasks.filter(t => t.bloc === bloc);
+  const done = list.filter(t => t.done).length;
+  return { done, total: list.length, pct: list.length ? Math.round((done / list.length) * 100) : 0 };
+}
+
+function trackerGetVisible(){
+  const today = trackerToday();
+  const weekStart = trackerStartOfWeek(today);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  weekEnd.setHours(23,59,59,999);
+
+  const overdue = trackerTasks.filter(t => !t.done && t.date && new Date(t.date + 'T00:00:00') < today);
+  const thisWeek = trackerTasks.filter(t => t.date && new Date(t.date + 'T00:00:00') >= weekStart && new Date(t.date + 'T00:00:00') <= weekEnd);
+
+  let visible;
+  if(trackerTab === 'semaine'){
+    const overdueIds = new Set(overdue.map(t => t.id));
+    visible = [...overdue, ...thisWeek.filter(t => !overdueIds.has(t.id))];
+  } else if(trackerTab === 'tout'){
+    visible = [...trackerTasks];
+  } else {
+    visible = trackerTasks.filter(t => t.bloc === trackerTab);
+  }
+
+  return visible.sort((a, b) => {
+    if(a.done !== b.done) return a.done ? 1 : -1;
+    if(!a.date) return 1;
+    if(!b.date) return -1;
+    return new Date(a.date) - new Date(b.date);
+  });
+}
+
+function trackerToggle(id){
+  trackerTasks = trackerTasks.map(t => t.id === id ? {...t, done:!t.done} : t);
+  saveTrackerTasks();
+  renderTracker();
+}
+function trackerRemove(id){
+  trackerTasks = trackerTasks.filter(t => t.id !== id);
+  saveTrackerTasks();
+  renderTracker();
+}
+function trackerSetTab(tab){
+  trackerTab = tab;
+  renderTracker();
+}
+function trackerToggleAdd(){
+  trackerShowAdd = !trackerShowAdd;
+  renderTracker();
+  if(trackerShowAdd){
+    const inp = document.getElementById('tracker-new-title');
+    if(inp) inp.focus();
+  }
+}
+function trackerAddTask(){
+  const inp = document.getElementById('tracker-new-title');
+  const sel = document.getElementById('tracker-new-bloc');
+  const title = inp ? inp.value.trim() : '';
+  if(!title) return;
+  trackerTasks.push({
+    id:'u' + Date.now(),
+    bloc: sel ? sel.value : 'produit',
+    title,
+    date: null,
+    prio: 2,
+    done: false,
+    note: '',
+  });
+  saveTrackerTasks();
+  trackerShowAdd = false;
+  renderTracker();
+}
+
+function renderTracker(){
+  const root = document.getElementById('tracker-root');
+  if(!root) return;
+
+  const today = trackerToday();
+  const daysToLaunch = Math.ceil((TRACKER_LAUNCH - today) / 86400000);
+  const totalDone = trackerTasks.filter(t => t.done).length;
+  const progress = trackerTasks.length ? Math.round((totalDone / trackerTasks.length) * 100) : 0;
+  const visible = trackerGetVisible();
+  const overdue = trackerTasks.filter(t => !t.done && t.date && new Date(t.date + 'T00:00:00') < today);
+
+  const tabs = [
+    ['semaine', 'Cette semaine'],
+    ['produit', 'Bloc 1 · Produit'],
+    ['reseaux', 'Bloc 2 · Réseaux'],
+    ['sept', 'Bloc 3 · Septembre'],
+    ['tout', 'Tout'],
+  ];
+
+  let html = `
+    <div class="tracker-header">
+      <div>
+        <div class="tracker-brand">Mood2Fit</div>
+        <h1 class="tracker-title">Centre de contrôle</h1>
+      </div>
+      <div class="tracker-stats">
+        <div class="tracker-stat">
+          <div class="tracker-stat-val" style="color:#8B7CF6">${daysToLaunch}j</div>
+          <div class="tracker-stat-lbl">avant lancement</div>
+        </div>
+        <div class="tracker-stat">
+          <div class="tracker-stat-val" style="color:#5EC8C0">${progress}%</div>
+          <div class="tracker-stat-lbl">global fait</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tracker-blocs">`;
+
+  Object.entries(TRACKER_BLOCS).forEach(([key, b]) => {
+    const p = trackerBlocProgress(key);
+    html += `
+      <div class="tracker-bloc-card" style="border-left:3px solid ${b.color}">
+        <div class="tracker-bloc-head">${trackerIcon(b.icon, b.color)}<span>${b.label}</span></div>
+        <div class="tracker-bloc-sub">${b.sub}</div>
+        <div class="tracker-bloc-bar"><div class="tracker-bloc-fill" style="width:${p.pct}%;background:${b.color}"></div></div>
+        <div class="tracker-bloc-count">${p.done}/${p.total} fait</div>
+      </div>`;
+  });
+
+  html += `</div><div class="tracker-tabs">`;
+  tabs.forEach(([key, label]) => {
+    html += `<button class="tracker-tab${trackerTab === key ? ' active' : ''}" onclick="trackerSetTab('${key}')">${label}</button>`;
+  });
+  html += `<button class="tracker-tab-add" onclick="trackerToggleAdd()">${trackerIcon('plus')} Ajouter</button></div>`;
+
+  html += `<div class="tracker-add-form${trackerShowAdd ? ' open' : ''}" id="tracker-add-form">
+    <input class="tracker-add-input" id="tracker-new-title" placeholder="Nouvelle tâche…" onkeydown="if(event.key==='Enter')trackerAddTask()">
+    <select class="tracker-add-select" id="tracker-new-bloc">`;
+  Object.entries(TRACKER_BLOCS).forEach(([k, b]) => {
+    html += `<option value="${k}">${b.label}</option>`;
+  });
+  html += `</select><button class="tracker-add-btn" onclick="trackerAddTask()">Ajouter</button></div>`;
+
+  if(trackerTab === 'semaine' && overdue.length > 0){
+    html += `<div class="tracker-overdue">${trackerIcon('flame')} ${overdue.length} tâche${overdue.length > 1 ? 's' : ''} en retard, en haut de liste</div>`;
+  }
+
+  html += `<div class="tracker-list">`;
+  if(!visible.length){
+    html += `<div class="tracker-empty">Rien ici pour l'instant.</div>`;
+  }
+  visible.forEach(t => {
+    const b = TRACKER_BLOCS[t.bloc];
+    const isOverdue = !t.done && t.date && new Date(t.date + 'T00:00:00') < today;
+    html += `
+      <div class="tracker-item${t.done ? ' done' : ''}" style="border-left-color:${isOverdue ? '#EF5B5B' : b.color}">
+        <button class="tracker-check" onclick="trackerToggle('${t.id}')">${t.done ? trackerIcon('check') : trackerIcon('circle')}</button>
+        <div class="tracker-item-body">
+          <div class="tracker-item-title">${t.title}</div>
+          ${t.note ? `<div class="tracker-item-note">${t.note}</div>` : ''}
+        </div>
+        ${t.date ? `<div class="tracker-item-date${isOverdue ? ' overdue' : ''}">${trackerFmtDate(t.date)}</div>` : ''}
+        <div class="tracker-prio" style="background:${trackerPrioColor(t.prio)}" title="P${t.prio}"></div>
+        <button class="tracker-remove" onclick="trackerRemove('${t.id}')">${trackerIcon('x')}</button>
+      </div>`;
+  });
+  html += `</div>`;
+
+  root.innerHTML = html;
+}
+
+loadTrackerTasks();
 
 document.getElementById('picker-overlay').addEventListener('click', e => {
   if(e.target === document.getElementById('picker-overlay')) closePicker();
